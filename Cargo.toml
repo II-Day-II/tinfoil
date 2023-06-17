@@ -1,0 +1,13 @@
+[package]
+name = "tinfoil"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+glam = {version = "0.24", features = ["bytemuck"]}
+wgpu = "0.16"
+winit = "0.28"
+bytemuck = {version = "1.13", features = ["derive"]}
+pollster = "0.3"
