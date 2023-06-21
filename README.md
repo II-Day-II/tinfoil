@@ -1,4 +1,4 @@
 # tinfoil
 
-A wrapper around wgpu for compute shader based rendering
+A wrapper around `wgpu` and `winit` for compute shader based rendering
 
