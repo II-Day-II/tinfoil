@@ -10,7 +10,7 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn new(device: &Device, config: &SurfaceConfiguration) -> Self {
+    pub fn render_texture(device: &Device, config: &SurfaceConfiguration) -> Self {
         let texture = device.create_texture(&TextureDescriptor {
             label: Some("RenderTexture texture"),
             size: Extent3d {
@@ -22,7 +22,7 @@ impl Texture {
             sample_count: 1,
             dimension: TextureDimension::D2,
             format: config.format,
-            usage: TextureUsages::RENDER_ATTACHMENT | TextureUsages::TEXTURE_BINDING, // may not need RENDER_ATTACHMENT. may need STORAGE_BINDING
+            usage: TextureUsages::STORAGE_BINDING | TextureUsages::TEXTURE_BINDING, // may need RENDER_ATTACHMENT?
             view_formats: &[],
         });
         let view = texture.create_view(&TextureViewDescriptor::default());

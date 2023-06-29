@@ -1,4 +1,4 @@
-use graphics::graphics::Graphics;
+use graphics::{graphics::Graphics, user_shaders::UserShadersBuilder};
 use std::time::{Duration, Instant};
 use wgpu::SurfaceError;
 pub use winit::event::WindowEvent;
@@ -9,7 +9,6 @@ use winit::{
 };
 
 mod graphics;
-mod resources;
 
 pub trait Application {
     fn update(&mut self, dt: Duration);
@@ -19,6 +18,7 @@ pub trait Application {
 pub struct Renderer<T: Application> {
     title: &'static str,
     user_model: T,
+    user_shaders: UserShadersBuilder,
 }
 
 impl<T> Renderer<T>
@@ -29,6 +29,7 @@ where
         Self {
             title,
             user_model: model,
+            user_shaders: UserShadersBuilder::new(),
         }
     }
     pub fn run(mut self) -> ! {
@@ -38,7 +39,7 @@ where
             .build(&event_loop)
             .expect("Couldn't create a window");
         let mut last_render_time = Instant::now();
-        let mut graphics = pollster::block_on(Graphics::new(window));
+        let mut graphics = pollster::block_on(Graphics::new(window, self.user_shaders));
         event_loop.run(move |event, _window_target, control_flow| {
             match event {
                 Event::RedrawRequested(id) if id == graphics.window().id() => {
@@ -57,6 +58,7 @@ where
                         }
                         Err(e) => eprintln!("{:?}", e),
                     }
+                    graphics.window().set_title(&format!("{} -- {:05.2}ms", self.title, dt.as_millis()));
                 }
                 Event::MainEventsCleared => {
                     graphics.window().request_redraw();

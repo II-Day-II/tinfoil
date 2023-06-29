@@ -6,7 +6,7 @@ use wgpu::{
 };
 use winit::{dpi::PhysicalSize, window::Window};
 
-use super::{render_texture::RenderTexture, texture::Texture, user_shaders::UserShaders};
+use super::{render_texture::RenderTexture, texture::Texture, user_shaders::{UserShaders, UserShadersBuilder}};
 
 pub const VSYNC: bool = true;
 
@@ -18,11 +18,11 @@ pub(crate) struct Graphics {
     window: Window,
     size: PhysicalSize<u32>,
     render_texture: RenderTexture,
-    user_shaders: Option<UserShaders>,
+    user_shaders:UserShaders,
 }
 
 impl Graphics {
-    pub(crate) async fn new(window: Window) -> Self {
+    pub(crate) async fn new(window: Window, user_shaders: UserShadersBuilder) -> Self {
         let size = window.inner_size();
 
         let instance = Instance::new(InstanceDescriptor {
@@ -81,9 +81,9 @@ impl Graphics {
             .await
             .expect("Couldn't get device and queue");
 
-        let base_texture = Texture::new(&device, &config);
+        let base_texture = Texture::render_texture(&device, &config);
         let render_texture = RenderTexture::from_texture(&device, &config, base_texture);
-
+        let user_shaders = user_shaders.build(&device);
         Self {
             surface,
             device,
@@ -92,7 +92,7 @@ impl Graphics {
             window,
             size,
             render_texture,
-            user_shaders: None,
+            user_shaders, 
         }
     }
     pub fn window(&self) -> &Window {
@@ -104,7 +104,7 @@ impl Graphics {
     pub fn resize(&mut self, size: PhysicalSize<u32>) {
         self.config.width = size.width;
         self.config.height = size.height;
-        
+        // TODO: resize the rendertexture maybe?
     }
     pub fn render(&self) -> Result<(), SurfaceError> {
         let output = self.surface.get_current_texture()?;
@@ -118,9 +118,7 @@ impl Graphics {
             });
 
         // raytrace the scene to the render texture
-        if let Some(shaders) = &self.user_shaders {
-            shaders.execute(&mut encoder);
-        }
+        self.user_shaders.execute(&mut encoder);
 
         // show the render texture on the screen
         self.render_texture.present(&mut encoder, &view);

@@ -148,7 +148,7 @@ impl RenderTexture {
     }
 
     pub fn new(device: &Device, config: &SurfaceConfiguration) -> Self {
-        let texture = Texture::new(device, config);
+        let texture = Texture::render_texture(device, config);
         Self::from_texture(device, config, texture)
     }
 
